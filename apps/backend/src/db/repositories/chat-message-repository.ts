@@ -13,7 +13,7 @@ const insertStmt = db.prepare<{ id: string; role: string; contentJson: string }>
   VALUES (@id, @role, @contentJson)
 `);
 const selectAllStmt = db.prepare<[], ChatMessageRow>(
-  "SELECT * FROM chat_messages ORDER BY created_at ASC",
+  "SELECT * FROM chat_messages ORDER BY rowid ASC",
 );
 
 export function appendMessage(message: Message): void {

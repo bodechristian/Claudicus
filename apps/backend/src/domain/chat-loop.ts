@@ -2,13 +2,19 @@ import { randomUUID } from "node:crypto";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Message, ToolCallInfo } from "@claudicus/domain";
 import { anthropic } from "../claude/anthropic-client.js";
+import { getActiveSystemPrompt } from "../claude/system-prompt-registry.js";
 import { config } from "../config.js";
-import { appendMessage } from "../db/repositories/chat-message-repository.js";
+import { appendMessage /*, getMessageHistory */ } from "../db/repositories/chat-message-repository.js";
 import { callTool } from "../mcp/mcp-client-manager.js";
 import { broadcast } from "../ws/connection-registry.js";
 import { computeMergedTools, findByNamespacedName, toClaudeTools } from "./tool-aggregator.js";
 
 export async function handleUserMessage(content: string): Promise<void> {
+  // History currently not appended. Should in future.
+  // const history: Anthropic.MessageParam[] = getMessageHistory()
+  //   .filter((message) => message.content.length > 0)
+  //   .map((message) => ({ role: message.role, content: message.content }));
+
   const userMessage: Message = {
     id: randomUUID(),
     role: "user",
@@ -18,7 +24,7 @@ export async function handleUserMessage(content: string): Promise<void> {
   appendMessage(userMessage);
   broadcast({ type: "chat:message", payload: { message: userMessage } });
 
-  const conversation: Anthropic.MessageParam[] = [{ role: "user", content }];
+  const conversation: Anthropic.MessageParam[] = [/* ...history, */ { role: "user", content }];
   const toolCalls: ToolCallInfo[] = [];
   const assistantMessageId = randomUUID();
   let finalText = "";
@@ -31,6 +37,7 @@ export async function handleUserMessage(content: string): Promise<void> {
     const stream = anthropic.messages.stream({
       model: config.anthropicModel,
       max_tokens: 4096,
+      system: getActiveSystemPrompt(),
       messages: conversation,
       tools: toClaudeTools(descriptors) as Anthropic.Tool[],
     });
