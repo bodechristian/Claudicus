@@ -51,6 +51,21 @@ export async function ensureConnected(
   return entry.client;
 }
 
+/**
+ * Replaces any existing connection with one using the given headers — the transport's
+ * headers are fixed at construction, so changing them requires a fresh client. The new
+ * client connects before the old one is dropped, so a failure leaves the old one intact.
+ */
+export async function reconnect(definition: McpServerDefinition, headers: Record<string, string>): Promise<Client> {
+  const entry = await connectServer(definition, headers);
+  const previous = managedServers.get(definition.id);
+  managedServers.set(definition.id, entry);
+  if (previous) {
+    void previous.client.close();
+  }
+  return entry.client;
+}
+
 export function isConnected(serverId: string): boolean {
   return managedServers.has(serverId);
 }

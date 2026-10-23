@@ -14,5 +14,9 @@ export async function patchServer(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  if (!response.ok) {
+    const error = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(error?.message ?? `Request failed with status ${response.status}`);
+  }
   return (await response.json()) as McpServerRuntimeView;
 }

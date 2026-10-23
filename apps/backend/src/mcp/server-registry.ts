@@ -12,6 +12,6 @@ export const MCP_SERVER_REGISTRY: McpServerDefinition[] = [
     name: "Demo Server",
     description: "Local fixture server exposing echo and collect_feedback (elicitation) tools.",
     url: "http://localhost:3100/mcp",
-    headerKeys: [],
+    headerKeys: ["X-OAuth-Token"],
   },
 ];
