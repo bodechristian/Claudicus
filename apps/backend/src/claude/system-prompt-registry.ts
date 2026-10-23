@@ -1,13 +1,9 @@
-export interface SystemPromptDefinition {
-  id: string;
-  name: string;
-  prompt: string;
-}
+import type { SystemPromptDefinition } from "@claudicus/domain";
+import { getActiveSystemPromptId } from "../db/repositories/system-prompt-state-repository.js";
 
 /**
- * Predefined system prompts. For now the active one is fixed via ACTIVE_SYSTEM_PROMPT_ID;
- * once users can pick or author prompts, the active id (and custom prompts) become
- * runtime state persisted in SQLite, the same way MCP server selection is.
+ * Predefined system prompts. Which one is active (if any) is runtime state persisted
+ * in SQLite via system-prompt-state-repository, the same way MCP server selection is.
  */
 export const SYSTEM_PROMPT_REGISTRY: SystemPromptDefinition[] = [
   {
@@ -18,8 +14,7 @@ export const SYSTEM_PROMPT_REGISTRY: SystemPromptDefinition[] = [
   },
 ];
 
-export const ACTIVE_SYSTEM_PROMPT_ID = "no-yapping";
-
 export function getActiveSystemPrompt(): string | undefined {
-  return SYSTEM_PROMPT_REGISTRY.find((entry) => entry.id === ACTIVE_SYSTEM_PROMPT_ID)?.prompt;
+  const activeId = getActiveSystemPromptId();
+  return SYSTEM_PROMPT_REGISTRY.find((entry) => entry.id === activeId)?.prompt;
 }

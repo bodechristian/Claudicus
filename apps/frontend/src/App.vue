@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { RouterLink, RouterView } from "vue-router";
+import SystemPromptQuickToggle from "./components/system-prompt/SystemPromptQuickToggle.vue";
+import { useSystemPromptsStore } from "./stores/system-prompts.store.js";
 import { useWsStore } from "./stores/ws.store.js";
 
 const ws = useWsStore();
-onMounted(() => ws.connect());
+const systemPromptsStore = useSystemPromptsStore();
+onMounted(() => {
+  ws.connect();
+  void systemPromptsStore.load();
+});
 </script>
 
 <template>
   <div class="shell">
     <header class="topbar">
-      <span class="brand">Claudicus</span>
-      <nav class="nav">
-        <RouterLink to="/" class="nav-link">Chat</RouterLink>
-        <RouterLink to="/settings" class="nav-link">Settings</RouterLink>
-      </nav>
+      <div class="topbar-start">
+        <span class="brand">Claudicus</span>
+        <nav class="nav">
+          <RouterLink to="/" class="nav-link">Chat</RouterLink>
+          <RouterLink to="/settings" class="nav-link">Settings</RouterLink>
+        </nav>
+      </div>
+      <SystemPromptQuickToggle prompt-id="no-yapping" />
       <span class="status" :class="{ connected: ws.connected }">
         {{ ws.connected ? "connected" : "connecting…" }}
       </span>
@@ -32,8 +41,10 @@ onMounted(() => ws.connect());
   height: 100%;
 }
 
+/* Equal-width outer columns keep the middle (quick toggle) truly centered. */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-3) var(--space-5);
@@ -46,10 +57,15 @@ onMounted(() => ws.connect());
   letter-spacing: 0.02em;
 }
 
+.topbar-start {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
 .nav {
   display: flex;
   gap: var(--space-4);
-  flex: 1;
 }
 
 .nav-link {
@@ -66,6 +82,7 @@ onMounted(() => ws.connect());
 }
 
 .status {
+  justify-self: end;
   font-size: 12px;
   color: var(--color-text-muted);
 }

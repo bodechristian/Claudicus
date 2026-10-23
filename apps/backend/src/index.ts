@@ -6,6 +6,7 @@ import { ensureConnected } from "./mcp/mcp-client-manager.js";
 import { MCP_SERVER_REGISTRY } from "./mcp/server-registry.js";
 import { registerServerRoutes } from "./routes/servers.routes.js";
 import { registerStaticRoutes } from "./routes/static.routes.js";
+import { registerSystemPromptRoutes } from "./routes/system-prompts.routes.js";
 import { registerWsRoute } from "./ws/ws-server.js";
 
 const app = Fastify({ logger: true });
@@ -29,6 +30,7 @@ await Promise.all(
 app.get("/api/health", async () => ({ status: "ok" }));
 
 await registerServerRoutes(app);
+await registerSystemPromptRoutes(app);
 await registerWsRoute(app);
 await registerStaticRoutes(app);
 
