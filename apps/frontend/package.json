@@ -1,0 +1,27 @@
+{
+  "name": "@claudicus/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@claudicus/domain": "workspace:*",
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^15.0.3",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "typescript": "^5.6.0",
+    "vite": "^8.3.5",
+    "vue-tsc": "^3.3.13"
+  }
+}
