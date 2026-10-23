@@ -11,7 +11,7 @@ Claudicus: a Claude chat UI with a built-in MCP client (protocol version `2026-0
 ```sh
 pnpm install                                    # install all workspace deps
 pnpm dev                                        # domain (watch build) + backend:3000 + frontend:5173, concurrently
-pnpm --filter @claudicus/mcp-demo-server dev     # demo MCP server on :3100 (echo + collect_feedback tools)
+pnpm --filter @claudicus/mcp-demo-server dev     # demo MCP server on :3100 (echo + create_car tools)
 pnpm build                                      # builds domain -> backend -> frontend, in that order
 pnpm typecheck                                  # tsc --noEmit / vue-tsc across all packages
 ```

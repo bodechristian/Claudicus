@@ -15,31 +15,42 @@ function buildServer(): McpServer {
     async ({ text }) => ({ content: [{ type: "text", text }] }),
   );
 
-  const feedbackSchema = z.object({
-    rating: z.number().min(1).max(5),
-    comments: z.string().optional(),
+  // Elicitation enums are string-only, so door counts are "2" / "4" rather than numbers.
+  const carSchema = z.object({
+    name: z.string().min(1),
+    doors: z.enum(["2", "4"]),
+    attachments: z.array(z.enum(["navi", "radio", "tv"])),
+    price: z.number(),
+    used: z.boolean(),
   });
 
   server.registerTool(
-    "collect_feedback",
+    "create_car",
     {
-      description: "Collects structured feedback from the user (via elicitation) before completing.",
-      inputSchema: { topic: z.string() },
+      description: "Creates a car, asking the user (via elicitation) for its name, door count, and attachments.",
+      inputSchema: {},
     },
-    async ({ topic }, ctx) => {
-      const feedback = acceptedContent(ctx.mcpReq.inputResponses, "feedback", feedbackSchema);
-      if (!feedback) {
+    async (_args, ctx) => {
+      const car = acceptedContent(ctx.mcpReq.inputResponses, "car", carSchema);
+      if (!car) {
         return inputRequired({
           inputRequests: {
-            feedback: inputRequired.elicit({
-              message: `Please rate "${topic}" from 1 to 5 and leave optional comments.`,
-              requestedSchema: feedbackSchema,
+            car: inputRequired.elicit({
+              message:
+                "Configure your new car: give it a name, pick the number of doors, choose any attachments, set a price, and say whether it's used.",
+              requestedSchema: carSchema,
             }),
           },
         });
       }
+      const attachments = car.attachments.length > 0 ? car.attachments.join(", ") : "none";
       return {
-        content: [{ type: "text", text: `Thanks! Received rating ${feedback.rating} for "${topic}".` }],
+        content: [
+          {
+            type: "text",
+            text: `Created ${car.used ? "used" : "new"} car "${car.name}" with ${car.doors} doors, attachments: ${attachments}, price: ${car.price}.`,
+          },
+        ],
       };
     },
   );
