@@ -62,5 +62,5 @@ Edit `apps/backend/src/mcp/server-registry.ts` only — add an entry with id/nam
 ## Cross-cutting conventions
 
 - Everything is ESM (`"type": "module"` everywhere); relative imports use explicit `.js` extensions even in `.ts` source, per `NodeNext` module resolution (`tsconfig.base.json`).
-- `packages/domain` has no runtime dependencies by design — don't add any; it's imported by both backend and frontend and must stay environment-agnostic.
+- `packages/domain` has no runtime dependencies by design — don't add any; it's imported by both backend and frontend and must stay environment-agnostic. The one exception is type-only (`import type`) use of `@modelcontextprotocol/client`: MCP spec types (elicitation schemas, `ElicitResult`, etc.) come from the SDK rather than being redefined. Because domain's emitted `.d.ts` references it, it's listed under `dependencies`, but it never reaches the frontend bundle.
 - Build order matters: domain must be built before backend/frontend typecheck/build against it (see root `package.json` `build` script and the Dockerfile's multi-stage build).

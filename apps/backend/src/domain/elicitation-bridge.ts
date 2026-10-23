@@ -19,7 +19,11 @@ const pending = new Map<string, PendingElicitation>();
  */
 export function handleElicitation(_serverId: string, toolCallId: string, request: ElicitRequest): Promise<ElicitResult> {
   const requestKey = randomUUID();
-  const params = request.params as { mode?: "form"; message: string; requestedSchema: RequestedSchema };
+  const params = request.params;
+  if (params.mode === "url") {
+    // URL-mode elicitation isn't supported; there's no form to render.
+    return Promise.resolve({ action: "decline" });
+  }
 
   return new Promise<ElicitResult>((resolve) => {
     pending.set(requestKey, { resolve, requestedSchema: params.requestedSchema });

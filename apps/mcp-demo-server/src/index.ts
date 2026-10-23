@@ -22,6 +22,8 @@ function buildServer(): McpServer {
     attachments: z.array(z.enum(["navi", "radio", "tv"])),
     price: z.number(),
     used: z.boolean(),
+    // Legacy titled single select: `enum` plus positional `enumNames` labels (deprecated in the spec, still valid).
+    color: z.enum(["red", "blue", "black"]).meta({ enumNames: ["Racing red", "Ocean blue", "Midnight black"] }),
   });
 
   server.registerTool(
@@ -37,7 +39,7 @@ function buildServer(): McpServer {
           inputRequests: {
             car: inputRequired.elicit({
               message:
-                "Configure your new car: give it a name, pick the number of doors, choose any attachments, set a price, and say whether it's used.",
+                "Configure your new car: give it a name, pick the number of doors, choose any attachments, set a price, say whether it's used, and pick a color.",
               requestedSchema: carSchema,
             }),
           },
@@ -48,7 +50,7 @@ function buildServer(): McpServer {
         content: [
           {
             type: "text",
-            text: `Created ${car.used ? "used" : "new"} car "${car.name}" with ${car.doors} doors, attachments: ${attachments}, price: ${car.price}.`,
+            text: `Created ${car.used ? "used" : "new"} ${car.color} car "${car.name}" with ${car.doors} doors, attachments: ${attachments}, price: ${car.price}.`,
           },
         ],
       };

@@ -121,6 +121,10 @@ importers:
         version: 5.9.3
 
   packages/domain:
+    dependencies:
+      '@modelcontextprotocol/client':
+        specifier: ^2.3.1
+        version: 2.3.1
     devDependencies:
       typescript:
         specifier: ^5.6.0

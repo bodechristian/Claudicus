@@ -1,5 +1,3 @@
-import type { InputRequiredResult } from "./elicitation.js";
-
 export type ToolCallStatus =
   | "pending"
   | "awaiting_input"
@@ -17,7 +15,6 @@ export interface ToolCallInfo {
   status: ToolCallStatus;
   result?: unknown;
   error?: string;
-  pendingElicitation?: InputRequiredResult;
 }
 
 export interface AggregatedToolDescriptor {

@@ -1,10 +1,4 @@
-import type {
-  EnumConstTitle,
-  MultiSelectEnumSchemaProperty,
-  RequestedSchema,
-  RequestedSchemaProperty,
-  StringSchemaProperty,
-} from "../mcp/elicitation.js";
+import type { MultiSelectEnumSchema, RequestedSchema, RequestedSchemaProperty } from "../mcp/elicitation.js";
 
 export interface ElicitationValidationError {
   property: string;
@@ -29,28 +23,11 @@ const FORMAT_VALIDATORS: Record<string, (value: string) => boolean> = {
   "date-time": (value) => !Number.isNaN(Date.parse(value)),
 };
 
-function isEnumConstTitleArray(items: unknown): items is EnumConstTitle[] {
-  return Array.isArray(items) && items.every((item) => typeof item?.const === "string" && typeof item?.title === "string");
-}
-
-function allowedSingleValues(property: RequestedSchemaProperty): string[] | undefined {
-  if (property.type === "string" && "enum" in property && property.enum) {
-    return property.enum;
-  }
-  if (property.type === "string" && "oneOf" in property && property.oneOf) {
-    return property.oneOf.map((option) => option.const);
-  }
-  return undefined;
-}
-
-function allowedMultiValues(property: MultiSelectEnumSchemaProperty): string[] {
+function allowedMultiValues(property: MultiSelectEnumSchema): string[] {
   if ("enum" in property.items) {
     return property.items.enum;
   }
-  if (isEnumConstTitleArray(property.items.anyOf)) {
-    return property.items.anyOf.map((option) => option.const);
-  }
-  return [];
+  return property.items.anyOf.map((option) => option.const);
 }
 
 function validateProperty(
@@ -59,31 +36,30 @@ function validateProperty(
   value: unknown,
   errors: ElicitationValidationError[],
 ): void {
-  const singleSelectValues = allowedSingleValues(property);
-
-  if (property.type === "string" && singleSelectValues) {
-    if (typeof value !== "string" || !singleSelectValues.includes(value)) {
-      errors.push({ property: name, message: `must be one of: ${singleSelectValues.join(", ")}` });
+  // Single select: untitled and legacy-titled (`enum` + `enumNames`) both carry `enum`; titled carries `oneOf`.
+  if ("enum" in property || "oneOf" in property) {
+    const allowed = "enum" in property ? property.enum : property.oneOf.map((option) => option.const);
+    if (typeof value !== "string" || !allowed.includes(value)) {
+      errors.push({ property: name, message: `must be one of: ${allowed.join(", ")}` });
     }
     return;
   }
 
   if (property.type === "string") {
-    const stringProperty = property as StringSchemaProperty;
     if (typeof value !== "string") {
       errors.push({ property: name, message: "must be a string" });
       return;
     }
-    if (stringProperty.minLength !== undefined && value.length < stringProperty.minLength) {
-      errors.push({ property: name, message: `must be at least ${stringProperty.minLength} characters` });
+    if (property.minLength !== undefined && value.length < property.minLength) {
+      errors.push({ property: name, message: `must be at least ${property.minLength} characters` });
     }
-    if (stringProperty.maxLength !== undefined && value.length > stringProperty.maxLength) {
-      errors.push({ property: name, message: `must be at most ${stringProperty.maxLength} characters` });
+    if (property.maxLength !== undefined && value.length > property.maxLength) {
+      errors.push({ property: name, message: `must be at most ${property.maxLength} characters` });
     }
-    if (stringProperty.format) {
-      const formatValidator = FORMAT_VALIDATORS[stringProperty.format];
+    if (property.format) {
+      const formatValidator = FORMAT_VALIDATORS[property.format];
       if (formatValidator && !formatValidator(value)) {
-        errors.push({ property: name, message: `must be a valid ${stringProperty.format}` });
+        errors.push({ property: name, message: `must be a valid ${property.format}` });
       }
     }
     return;

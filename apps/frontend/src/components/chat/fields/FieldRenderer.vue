@@ -18,15 +18,14 @@ function update(value: unknown): void {
 const label = computed(() => props.property.title ?? props.name);
 
 const singleSelectOptions = computed<{ value: string; label: string }[] | undefined>(() => {
-  if (props.property.type !== "string") {
-    return undefined;
-  }
-  const property = props.property as { enum?: string[]; oneOf?: { const: string; title: string }[] };
-  if (property.enum) {
-    return property.enum.map((value) => ({ value, label: value }));
-  }
-  if (property.oneOf) {
+  const property = props.property;
+  if ("oneOf" in property) {
     return property.oneOf.map((option) => ({ value: option.const, label: option.title }));
+  }
+  if ("enum" in property) {
+    // Legacy titled enums label options positionally via `enumNames`.
+    const names = "enumNames" in property ? property.enumNames : undefined;
+    return property.enum.map((value, index) => ({ value, label: names?.[index] ?? value }));
   }
   return undefined;
 });
@@ -35,11 +34,11 @@ const multiSelectOptions = computed<{ value: string; label: string }[]>(() => {
   if (props.property.type !== "array") {
     return [];
   }
-  const items = props.property.items as { enum?: string[]; anyOf?: { const: string; title: string }[] };
-  if (items.enum) {
+  const items = props.property.items;
+  if ("enum" in items) {
     return items.enum.map((value) => ({ value, label: value }));
   }
-  return (items.anyOf ?? []).map((option) => ({ value: option.const, label: option.title }));
+  return items.anyOf.map((option) => ({ value: option.const, label: option.title }));
 });
 
 function toggleMultiValue(value: string, checked: boolean): void {
