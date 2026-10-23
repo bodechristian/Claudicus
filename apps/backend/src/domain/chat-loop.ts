@@ -16,6 +16,7 @@ export async function handleUserMessage(content: string): Promise<void> {
     createdAt: new Date().toISOString(),
   };
   appendMessage(userMessage);
+  broadcast({ type: "chat:message", payload: { message: userMessage } });
 
   const conversation: Anthropic.MessageParam[] = [{ role: "user", content }];
   const toolCalls: ToolCallInfo[] = [];

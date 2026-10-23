@@ -36,18 +36,26 @@ export async function registerServerRoutes(app: FastifyInstance): Promise<void> 
         );
         setServerHeaders(definition.id, filtered);
       }
-      if (selected !== undefined) {
-        setServerSelected(definition.id, selected);
-      }
 
-      const view = toRuntimeView(definition);
-      if (view.selected) {
-        await ensureConnected(definition, view.headers);
+      const wantsSelected = selected ?? getServerState(definition.id)?.selected ?? false;
+      if (wantsSelected) {
+        // Connect before persisting selection, so a server we can't reach never
+        // ends up marked "selected" without a live connection behind it.
+        try {
+          await ensureConnected(definition, toRuntimeView(definition).headers);
+        } catch (error) {
+          request.log.error({ err: error, serverId: definition.id }, "Failed to connect MCP server");
+          return reply.code(502).send({ message: `Could not connect to MCP server "${definition.name}"` });
+        }
       } else {
         disconnectServer(definition.id);
       }
 
-      return view;
+      if (selected !== undefined) {
+        setServerSelected(definition.id, selected);
+      }
+
+      return toRuntimeView(definition);
     },
   );
 }

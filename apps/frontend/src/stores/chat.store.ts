@@ -22,6 +22,10 @@ export const useChatStore = defineStore("chat", () => {
         messages.value = message.payload.messages;
         break;
       }
+      case "chat:message": {
+        messages.value.push(message.payload.message);
+        break;
+      }
       case "chat:messageStart": {
         messages.value.push({
           id: message.payload.messageId,

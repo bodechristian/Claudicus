@@ -51,6 +51,10 @@ export async function ensureConnected(
   return entry.client;
 }
 
+export function isConnected(serverId: string): boolean {
+  return managedServers.has(serverId);
+}
+
 export function disconnectServer(serverId: string): void {
   const entry = managedServers.get(serverId);
   if (!entry) {

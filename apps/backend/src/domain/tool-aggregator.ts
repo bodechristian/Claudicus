@@ -1,6 +1,6 @@
 import type { AggregatedToolDescriptor } from "@claudicus/domain";
 import { getServerState } from "../db/repositories/mcp-server-state-repository.js";
-import { listTools } from "../mcp/mcp-client-manager.js";
+import { isConnected, listTools } from "../mcp/mcp-client-manager.js";
 import { MCP_SERVER_REGISTRY } from "../mcp/server-registry.js";
 
 export async function computeMergedTools(): Promise<AggregatedToolDescriptor[]> {
@@ -8,7 +8,9 @@ export async function computeMergedTools(): Promise<AggregatedToolDescriptor[]> 
 
   for (const definition of MCP_SERVER_REGISTRY) {
     const state = getServerState(definition.id);
-    if (!state?.selected) {
+    // A selected server can still be disconnected (e.g. it was unreachable on
+    // startup); skip it rather than failing the whole chat turn.
+    if (!state?.selected || !isConnected(definition.id)) {
       continue;
     }
     const { tools } = await listTools(definition.id);

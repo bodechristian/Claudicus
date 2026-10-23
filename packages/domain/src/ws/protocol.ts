@@ -8,6 +8,7 @@ export type ClientToServerMessage =
 
 export type ServerToClientMessage =
   | { type: "chat:history"; payload: { messages: Message[] } }
+  | { type: "chat:message"; payload: { message: Message } }
   | { type: "chat:messageStart"; payload: { messageId: string; role: "assistant" } }
   | { type: "chat:token"; payload: { messageId: string; token: string } }
   | { type: "chat:messageEnd"; payload: { messageId: string } }
